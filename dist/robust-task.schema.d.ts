@@ -1,10 +1,10 @@
 import { z } from 'zod/v4';
 export declare namespace RobustTask {
-    const StatusValues: readonly ["pending", "running", "succeeded", "failed", "rejected", "blocked", "skipped", "pending-paused", "blocked-paused"];
+    const StatusValues: readonly ["pending", "running", "succeeded", "failed", "rejected", "blocked-dependency", "blocked-input", "skipped", "pending-paused", "blocked-dependency-paused", "blocked-input-paused"];
     type Status = (typeof StatusValues)[number];
     type TerminalStatus = 'succeeded' | 'failed' | 'rejected' | 'skipped';
-    type ActiveStatus = 'pending' | 'running' | 'blocked' | 'pending-paused' | 'blocked-paused';
-    type PausedStatus = 'pending-paused' | 'blocked-paused';
+    type ActiveStatus = 'pending' | 'running' | 'blocked-dependency' | 'blocked-input' | 'pending-paused' | 'blocked-dependency-paused' | 'blocked-input-paused';
+    type PausedStatus = 'pending-paused' | 'blocked-dependency-paused' | 'blocked-input-paused';
     const ErrorInfoSchema: z.ZodObject<{
         message: z.ZodString;
         code: z.ZodOptional<z.ZodString>;
@@ -27,6 +27,14 @@ export declare namespace RobustTask {
         readonly issues?: string[];
         readonly timestamp: string;
     }
+    const TaskConfigSchema: z.ZodObject<{
+        timeoutMs: z.ZodNumber;
+        maxAttempts: z.ZodNumber;
+    }, z.core.$strip>;
+    interface TaskConfig {
+        readonly timeoutMs: number;
+        readonly maxAttempts: number;
+    }
     const TaskStateSchema: z.ZodObject<{
         status: z.ZodEnum<{
             pending: "pending";
@@ -34,10 +42,12 @@ export declare namespace RobustTask {
             succeeded: "succeeded";
             failed: "failed";
             rejected: "rejected";
-            blocked: "blocked";
+            "blocked-dependency": "blocked-dependency";
+            "blocked-input": "blocked-input";
             skipped: "skipped";
             "pending-paused": "pending-paused";
-            "blocked-paused": "blocked-paused";
+            "blocked-dependency-paused": "blocked-dependency-paused";
+            "blocked-input-paused": "blocked-input-paused";
         }>;
         createdAt: z.ZodISODateTime;
         startedAt: z.ZodOptional<z.ZodISODateTime>;
@@ -45,6 +55,11 @@ export declare namespace RobustTask {
         finishedAt: z.ZodOptional<z.ZodISODateTime>;
         attempts: z.ZodNumber;
         runtimeToken: z.ZodOptional<z.ZodString>;
+        data: z.ZodOptional<z.ZodUnknown>;
+        config: z.ZodOptional<z.ZodObject<{
+            timeoutMs: z.ZodNumber;
+            maxAttempts: z.ZodNumber;
+        }, z.core.$strip>>;
         progress: z.ZodOptional<z.ZodUnknown>;
         result: z.ZodOptional<z.ZodUnknown>;
         error: z.ZodOptional<z.ZodObject<{
@@ -59,7 +74,7 @@ export declare namespace RobustTask {
             timestamp: z.ZodISODateTime;
         }, z.core.$strip>>;
     }, z.core.$strip>;
-    interface TaskState<TProgress = unknown, TResult = unknown> {
+    interface TaskState<TData = unknown, TConfig = unknown, TProgress = unknown, TResult = unknown> {
         readonly status: Status;
         readonly createdAt: string;
         readonly startedAt?: string;
@@ -67,6 +82,8 @@ export declare namespace RobustTask {
         readonly finishedAt?: string;
         readonly attempts: number;
         readonly runtimeToken?: string;
+        readonly data?: TData;
+        readonly config?: TConfig;
         readonly progress?: TProgress;
         readonly result?: TResult;
         readonly error?: ErrorInfo;

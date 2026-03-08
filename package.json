@@ -13,13 +13,14 @@
 		"clean": "rm -rf dist node_modules package-lock.json",
 		"pull:upstream": "./scripts/pull-upstream.sh",
 		"rebuild": "npm run clean && npm run pull:upstream && npm install && npm run build",
-		"test": "echo \"Error: no test specified\" && exit 1"
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"upgrade": "ncu --upgrade --reject redis"
 	},
 	"devDependencies": {
 		"typescript": "^5.9.3",
 		"zod": "^4.3.6"
 	},
 	"peerDependencies": {
-		"zod": "^4.1.12"
+		"zod": "^4.3.0"
 	}
 }

@@ -12,10 +12,12 @@ export var RobustTask;
         'succeeded', // Completed successfully
         'failed', // Completed with error
         'rejected', // Failed without retry (e.g. validation error)
-        'blocked', // Waiting for previous task
+        'blocked-dependency', // Waiting for previous task
+        'blocked-input', // Waiting for external input
         'skipped', // Task will never execute
         'pending-paused', // Execution paused
-        'blocked-paused', // Manually paused while waiting for previous task
+        'blocked-dependency-paused', // Manually paused while waiting for previous task
+        'blocked-input-paused', // Manually paused while waiting for external input
     ];
     // ===== Task Structure =====
     RobustTask.ErrorInfoSchema = z.object({
@@ -29,6 +31,10 @@ export var RobustTask;
         issues: z.array(z.string()).optional(),
         timestamp: z.iso.datetime(),
     });
+    RobustTask.TaskConfigSchema = z.object({
+        timeoutMs: z.number(),
+        maxAttempts: z.number(),
+    });
     RobustTask.TaskStateSchema = z.object({
         status: z.enum(RobustTask.StatusValues),
         createdAt: z.iso.datetime(),
@@ -37,6 +43,8 @@ export var RobustTask;
         finishedAt: z.iso.datetime().optional(),
         attempts: z.number(),
         runtimeToken: z.string().optional(),
+        data: z.unknown().optional(),
+        config: RobustTask.TaskConfigSchema.optional(),
         progress: z.unknown().optional(),
         result: z.unknown().optional(),
         error: RobustTask.ErrorInfoSchema.optional(),
@@ -48,11 +56,11 @@ export var RobustTask;
     }
     RobustTask.isTerminal = isTerminal;
     function isActive(status) {
-        return status === 'pending' || status === 'running' || status === 'blocked' || status === 'pending-paused' || status === 'blocked-paused';
+        return status === 'pending' || status === 'running' || status === 'blocked-dependency' || status === 'blocked-input' || status === 'pending-paused' || status === 'blocked-dependency-paused' || status === 'blocked-input-paused';
     }
     RobustTask.isActive = isActive;
     function isPaused(status) {
-        return status === 'pending-paused' || status === 'blocked-paused';
+        return status === 'pending-paused' || status === 'blocked-dependency-paused' || status === 'blocked-input-paused';
     }
     RobustTask.isPaused = isPaused;
 })(RobustTask || (RobustTask = {}));
