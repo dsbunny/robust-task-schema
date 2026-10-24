@@ -5,11 +5,24 @@
 set -e
 
 UPSTREAM_REPO_PATH="../melanie/packages/robust-task-schema"
+ZOD_REGISTRY_COMMIT=$(cd ../zod-registry && git rev-parse --short HEAD)
 
 rsync -av --delete "$UPSTREAM_REPO_PATH/src/." "src/."
 rsync -av --delete \
+	"$UPSTREAM_REPO_PATH/CHANGELOG.md" \
 	"$UPSTREAM_REPO_PATH/LICENSE" \
 	"$UPSTREAM_REPO_PATH/package.json" \
 	"$UPSTREAM_REPO_PATH/README.md" \
 	"$UPSTREAM_REPO_PATH/tsconfig.json" \
 	"."
+
+jq \
+	--tab \
+	--arg registry_commit "$ZOD_REGISTRY_COMMIT" \
+	'
+	.peerDependencies["@dsbunny/zod-registry"]	= "github:dsbunny/zod-registry"				|
+	.devDependencies["@dsbunny/zod-registry"]	= ("github:dsbunny/zod-registry#" + $registry_commit)
+	' package.json | sponge package.json
+
+jq '.devDependencies | with_entries(select(.key | test("^@dsbunny/.*-schema$")))' package.json
+

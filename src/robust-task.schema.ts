@@ -3,7 +3,8 @@
 // governed by an MIT-style license that can be found in the LICENSE file or at
 // https://opensource.org/licenses/MIT.
 
-import { z } from 'zod/v4';
+import * as z from 'zod';
+import { dsbunnyRegistry } from '@dsbunny/zod-registry';
 
 export namespace RobustTask  {
 	// ===== Task Status Types =====
@@ -33,18 +34,24 @@ export namespace RobustTask  {
 		code: z.string().optional(),
 		stack: z.string().optional(),
 		timestamp: z.iso.datetime(),
+	}).register(dsbunnyRegistry, {
+		id: 'ErrorInfoSchema',
+		description: 'The schema for error information related to task execution',
 	});
 	export interface ErrorInfo {
 		readonly message: string;
 		readonly code?: string;
 		readonly stack?: string;
 		readonly timestamp: string;
-	}
+	};
 
 	export const RejectionInfoSchema = z.object({
 		reason: z.string(),
 		issues: z.array(z.string()).optional(),
 		timestamp: z.iso.datetime(),
+	}).register(dsbunnyRegistry, {
+		id: 'RejectionInfoSchema',
+		description: 'The schema for rejection information related to task execution',
 	});
 	export interface RejectionInfo {
 		readonly reason: string;
@@ -55,11 +62,14 @@ export namespace RobustTask  {
 	export const TaskConfigSchema = z.object({
 		timeoutMs: z.number(),
 		maxAttempts: z.number(),
+	}).register(dsbunnyRegistry, {
+		id: 'TaskConfigSchema',
+		description: 'The schema for task configuration',
 	});
 	export interface TaskConfig {
 		readonly timeoutMs: number;
 		readonly maxAttempts: number;
-	}
+	};
 
 	export const TaskStateSchema = z.object({
 		status: z.enum(StatusValues),
@@ -75,6 +85,9 @@ export namespace RobustTask  {
 		result: z.unknown().optional(),
 		error: ErrorInfoSchema.optional(),
 		rejection: RejectionInfoSchema.optional(),
+	}).register(dsbunnyRegistry, {
+		id: 'TaskStateSchema',
+		description: 'The schema for task state',
 	});
 	export interface TaskState<TData = unknown, TConfig = unknown, TProgress = unknown, TResult = unknown> {
 		readonly status: Status;
@@ -90,7 +103,7 @@ export namespace RobustTask  {
 		readonly result?: TResult;
 		readonly error?: ErrorInfo;
 		readonly rejection?: RejectionInfo;
-	}
+	};
 
 	// ===== Type Guards =====
 

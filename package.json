@@ -1,6 +1,6 @@
 {
 	"name": "@dsbunny/robust-task-schema",
-	"version": "1.0.0",
+	"version": "1.1.1",
 	"description": "Robust task manager schema for JavaScript/TypeScript",
 	"type": "module",
 	"main": "dist/robust-task.schema.js",
@@ -17,10 +17,12 @@
 		"upgrade": "ncu --upgrade --reject redis"
 	},
 	"devDependencies": {
+		"@dsbunny/zod-registry": "github:dsbunny/zod-registry#35c7ef6",
 		"typescript": "^5.9.3",
 		"zod": "^4.3.6"
 	},
 	"peerDependencies": {
+		"@dsbunny/zod-registry": "github:dsbunny/zod-registry",
 		"zod": "^4.3.0"
 	}
 }

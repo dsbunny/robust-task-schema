@@ -1,4 +1,4 @@
-import { z } from 'zod/v4';
+import * as z from 'zod';
 export declare namespace RobustTask {
     const StatusValues: readonly ["pending", "running", "succeeded", "failed", "rejected", "blocked-dependency", "blocked-input", "skipped", "pending-paused", "blocked-dependency-paused", "blocked-input-paused"];
     type Status = (typeof StatusValues)[number];

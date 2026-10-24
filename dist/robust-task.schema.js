@@ -2,7 +2,8 @@
 // Copyright 2026 Digital Signage Bunny Corp. Use of this source code is
 // governed by an MIT-style license that can be found in the LICENSE file or at
 // https://opensource.org/licenses/MIT.
-import { z } from 'zod/v4';
+import * as z from 'zod';
+import { dsbunnyRegistry } from '@dsbunny/zod-registry';
 export var RobustTask;
 (function (RobustTask) {
     // ===== Task Status Types =====
@@ -25,16 +26,27 @@ export var RobustTask;
         code: z.string().optional(),
         stack: z.string().optional(),
         timestamp: z.iso.datetime(),
+    }).register(dsbunnyRegistry, {
+        id: 'ErrorInfoSchema',
+        description: 'The schema for error information related to task execution',
     });
+    ;
     RobustTask.RejectionInfoSchema = z.object({
         reason: z.string(),
         issues: z.array(z.string()).optional(),
         timestamp: z.iso.datetime(),
+    }).register(dsbunnyRegistry, {
+        id: 'RejectionInfoSchema',
+        description: 'The schema for rejection information related to task execution',
     });
     RobustTask.TaskConfigSchema = z.object({
         timeoutMs: z.number(),
         maxAttempts: z.number(),
+    }).register(dsbunnyRegistry, {
+        id: 'TaskConfigSchema',
+        description: 'The schema for task configuration',
     });
+    ;
     RobustTask.TaskStateSchema = z.object({
         status: z.enum(RobustTask.StatusValues),
         createdAt: z.iso.datetime(),
@@ -49,7 +61,11 @@ export var RobustTask;
         result: z.unknown().optional(),
         error: RobustTask.ErrorInfoSchema.optional(),
         rejection: RobustTask.RejectionInfoSchema.optional(),
+    }).register(dsbunnyRegistry, {
+        id: 'TaskStateSchema',
+        description: 'The schema for task state',
     });
+    ;
     // ===== Type Guards =====
     function isTerminal(status) {
         return status === 'succeeded' || status === 'failed' || status === 'rejected' || status === 'skipped';
