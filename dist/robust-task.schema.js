@@ -22,6 +22,7 @@ export var RobustTask;
     ];
     // ===== Task Structure =====
     RobustTask.ErrorInfoSchema = z.object({
+        '@type': z.literal('ErrorInfo'),
         message: z.string(),
         code: z.string().optional(),
         stack: z.string().optional(),
@@ -32,6 +33,7 @@ export var RobustTask;
     });
     ;
     RobustTask.RejectionInfoSchema = z.object({
+        '@type': z.literal('RejectionInfo'),
         reason: z.string(),
         issues: z.array(z.string()).optional(),
         timestamp: z.iso.datetime(),
@@ -40,6 +42,7 @@ export var RobustTask;
         description: 'The schema for rejection information related to task execution',
     });
     RobustTask.TaskConfigSchema = z.object({
+        '@type': z.literal('TaskConfig'),
         timeoutMs: z.number(),
         maxAttempts: z.number(),
     }).register(dsbunnyRegistry, {
@@ -48,6 +51,7 @@ export var RobustTask;
     });
     ;
     RobustTask.TaskStateSchema = z.object({
+        '@type': z.literal('TaskState'),
         status: z.enum(RobustTask.StatusValues),
         createdAt: z.iso.datetime(),
         startedAt: z.iso.datetime().optional(),
@@ -65,6 +69,26 @@ export var RobustTask;
         id: 'TaskStateSchema',
         description: 'The schema for task state',
     });
+    function normalizeTaskStateTypeTags(value) {
+        const addTypeIfMissing = (input, type) => {
+            if (!input || typeof input !== 'object' || Array.isArray(input) || '@type' in input) {
+                return input;
+            }
+            return { ...input, '@type': type };
+        };
+        const taggedState = addTypeIfMissing(value, 'TaskState');
+        if (!taggedState || typeof taggedState !== 'object' || Array.isArray(taggedState)) {
+            return taggedState;
+        }
+        const state = taggedState;
+        return {
+            ...state,
+            ...(state.config !== undefined && { config: addTypeIfMissing(state.config, 'TaskConfig') }),
+            ...(state.error !== undefined && { error: addTypeIfMissing(state.error, 'ErrorInfo') }),
+            ...(state.rejection !== undefined && { rejection: addTypeIfMissing(state.rejection, 'RejectionInfo') }),
+        };
+    }
+    RobustTask.normalizeTaskStateTypeTags = normalizeTaskStateTypeTags;
     ;
     // ===== Type Guards =====
     function isTerminal(status) {

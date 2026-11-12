@@ -1,6 +1,6 @@
 {
 	"name": "@dsbunny/robust-task-schema",
-	"version": "1.1.1",
+	"version": "2.0.2",
 	"description": "Robust task manager schema for JavaScript/TypeScript",
 	"type": "module",
 	"main": "dist/robust-task.schema.js",
@@ -13,7 +13,7 @@
 		"clean": "rm -rf dist node_modules package-lock.json",
 		"pull:upstream": "./scripts/pull-upstream.sh",
 		"rebuild": "npm run clean && npm run pull:upstream && npm install && npm run build",
-		"test": "echo \"Error: no test specified\" && exit 1",
+		"test": "npm run build && node --test test/*.test.mjs",
 		"upgrade": "ncu --upgrade --reject redis"
 	},
 	"devDependencies": {

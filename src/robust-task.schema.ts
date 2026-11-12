@@ -30,6 +30,7 @@ export namespace RobustTask  {
 	// ===== Task Structure =====
 
 	export const ErrorInfoSchema = z.object({
+		'@type': z.literal('ErrorInfo'),
 		message: z.string(),
 		code: z.string().optional(),
 		stack: z.string().optional(),
@@ -39,6 +40,7 @@ export namespace RobustTask  {
 		description: 'The schema for error information related to task execution',
 	});
 	export interface ErrorInfo {
+		readonly '@type': 'ErrorInfo';
 		readonly message: string;
 		readonly code?: string;
 		readonly stack?: string;
@@ -46,6 +48,7 @@ export namespace RobustTask  {
 	};
 
 	export const RejectionInfoSchema = z.object({
+		'@type': z.literal('RejectionInfo'),
 		reason: z.string(),
 		issues: z.array(z.string()).optional(),
 		timestamp: z.iso.datetime(),
@@ -54,12 +57,14 @@ export namespace RobustTask  {
 		description: 'The schema for rejection information related to task execution',
 	});
 	export interface RejectionInfo {
+		readonly '@type': 'RejectionInfo';
 		readonly reason: string;
 		readonly issues?: string[];
 		readonly timestamp: string;
 	}
 
 	export const TaskConfigSchema = z.object({
+		'@type': z.literal('TaskConfig'),
 		timeoutMs: z.number(),
 		maxAttempts: z.number(),
 	}).register(dsbunnyRegistry, {
@@ -67,11 +72,13 @@ export namespace RobustTask  {
 		description: 'The schema for task configuration',
 	});
 	export interface TaskConfig {
+		readonly '@type': 'TaskConfig';
 		readonly timeoutMs: number;
 		readonly maxAttempts: number;
 	};
 
 	export const TaskStateSchema = z.object({
+		'@type': z.literal('TaskState'),
 		status: z.enum(StatusValues),
 		createdAt: z.iso.datetime(),
 		startedAt: z.iso.datetime().optional(),
@@ -89,7 +96,29 @@ export namespace RobustTask  {
 		id: 'TaskStateSchema',
 		description: 'The schema for task state',
 	});
+
+	export function normalizeTaskStateTypeTags(value: unknown): unknown {
+		const addTypeIfMissing = (input: unknown, type: string): unknown => {
+			if(!input || typeof input !== 'object' || Array.isArray(input) || '@type' in input) {
+				return input;
+			}
+			return { ...input, '@type': type };
+		};
+		const taggedState = addTypeIfMissing(value, 'TaskState');
+		if(!taggedState || typeof taggedState !== 'object' || Array.isArray(taggedState)) {
+			return taggedState;
+		}
+		const state = taggedState as Record<string, unknown>;
+		return {
+			...state,
+			...(state.config !== undefined && { config: addTypeIfMissing(state.config, 'TaskConfig') }),
+			...(state.error !== undefined && { error: addTypeIfMissing(state.error, 'ErrorInfo') }),
+			...(state.rejection !== undefined && { rejection: addTypeIfMissing(state.rejection, 'RejectionInfo') }),
+		};
+	}
+
 	export interface TaskState<TData = unknown, TConfig = unknown, TProgress = unknown, TResult = unknown> {
+		readonly '@type': 'TaskState';
 		readonly status: Status;
 		readonly createdAt: string;
 		readonly startedAt?: string;
