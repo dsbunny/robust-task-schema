@@ -105,3 +105,4 @@ export declare namespace RobustTask {
     function isActive(status: Status): status is ActiveStatus;
     function isPaused(status: Status): status is PausedStatus;
 }
+//# sourceMappingURL=robust-task.schema.d.ts.map
