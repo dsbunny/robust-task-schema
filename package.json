@@ -17,7 +17,7 @@
 		"upgrade": "ncu --upgrade --reject redis"
 	},
 	"devDependencies": {
-		"@dsbunny/zod-registry": "github:dsbunny/zod-registry#35c7ef6",
+		"@dsbunny/zod-registry": "github:dsbunny/zod-registry#0873db4",
 		"typescript": "^5.9.3",
 		"zod": "^4.3.6"
 	},
